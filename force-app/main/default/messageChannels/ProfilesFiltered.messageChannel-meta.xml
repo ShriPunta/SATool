@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningMessageChannel xmlns="http://soap.sforce.com/2006/04/metadata">
+    <masterLabel>ProfilesFiltered</masterLabel>
+    <description>This event is fired when profiles filters change.</description>
+    <lightningMessageFields>
+        <fieldName>filters</fieldName>
+        <description>Current profile filters</description>
+    </lightningMessageFields>
+</LightningMessageChannel>

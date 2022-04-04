@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+	<types>
+		<members>SATController</members>
+		<name>ApexClass</name>
+	</types>
+	<types>
+		<members>SAToolv2</members>
+		<name>CustomTab</name>
+	</types>
+	<types>
+		<members>SAToolv2</members>
+		<name>FlexiPage</name>
+	</types>
+	<types>
+		<members>categoryFilter</members>
+		<members>saTable</members>
+		<members>queryBox</members>
+		<members>satContainer</members>
+		<members>searchableDropdown</members>
+		<members>sobjectFilter</members>
+		<name>LightningComponentBundle</name>
+	</types>
+	<types>
+		<members>PopulateSATable</members>
+		<name>LightningMessageChannel</name>
+	</types>
+	<version>53.0</version>
+</Package>

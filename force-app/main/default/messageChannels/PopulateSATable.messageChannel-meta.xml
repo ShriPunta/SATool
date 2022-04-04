@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <LightningMessageChannel xmlns="http://soap.sforce.com/2006/04/metadata">
-    <masterLabel>ProfilesFiltered</masterLabel>
-    <description>This event is fired when profiles filters change.</description>
+    <masterLabel>PopulateSATable</masterLabel>
+    <description>This event is fired when filters are updated.</description>
     <lightningMessageFields>
         <fieldName>filters</fieldName>
-        <description>Current profile filters</description>
+        <description>Current filters for SATool.</description>
     </lightningMessageFields>
 </LightningMessageChannel>

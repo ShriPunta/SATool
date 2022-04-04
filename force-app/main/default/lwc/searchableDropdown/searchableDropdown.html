@@ -2,7 +2,7 @@
 <template>
     <div class="slds-form-element">
         <!-- Field Label -->
-        <label class={labelClass} for="select-sobject-id">{fieldLabel}</label>
+        <label class={labelClass} for="select-sobject-id">{fieldlabel}</label>
         <!--/ Field Label -->
         <div class="slds-form-element_control">
             <!-- Combobox Container -->
@@ -40,7 +40,7 @@
                         <ul class="slds-listbox slds-listbox_vertical" role="presentation">
                             <li>
                                 <!-- Search input box -->
-                                <lightning-input label="Search objects" type="text" class="slds-input search-input-class"
+                                <lightning-input label={dropdownlabel} type="text" class="slds-input search-input-class"
                                     value={inputValue} onkeyup={handleKeyPress} onblur={closeDropdown}></lightning-input>
                             </li>
                         </ul>

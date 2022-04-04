@@ -1,12 +1,12 @@
 <template>
     <!--https://shridharp-trailhead-dev-ed.lightning.force.com/c/TestLightningApp.app-->
     <!-- <lightning-card title="Filters" icon-name="standard:calibration"> -->
-        <div class="slds-grid slds-box slds-gutters">
-            <div class="slds-col">
-                <c-category-filter></c-category-filter>
+        <div class="slds-grid slds-box slds-gutters slds-wrap">
+            <div class="slds-col slds-size_1-of-2">
+                <c-category-filter onfilterupdate={handlefilterupdate}></c-category-filter>
             </div>
-            <div class="slds-col">
-                <c-sobject-filter></c-sobject-filter>
+            <div class="slds-col slds-size_1-of-2">
+                <c-sobject-filter onfilterupdate={handlefilterupdate}></c-sobject-filter>
             </div>
         </div>
     <!-- </lightning-card> -->

@@ -1,4 +1,12 @@
 <template>
-    <c-searchable-dropdown options={allProfiles} onselectedpicklist={handleProfileSelect} value={defaultProfSelect.value} label={defaultProfSelect.label}></c-searchable-dropdown>
-    <c-searchable-dropdown options={allProfiles} onselectedpicklist={handleProfileSelect} value={defaultProfSelect.value} label={defaultProfSelect.label}></c-searchable-dropdown>
+    <lightning-card>
+    <div class="slds-var-m-around_x-small">
+        <!-- <div class="slds-var-m-horizontal_medium"> -->
+            <section>
+                <h1>Sobject Filter</h1>
+                <c-searchable-dropdown eventname="Sobject" fieldlabel="Sobjects" dropdownlabel="Select Sobjects"  options={allSobjs} onselectedpicklist={handlePicklistSelect} value={defaultObjSelect.value} label={defaultObjSelect.label}></c-searchable-dropdown>
+            </section>
+    </div>
+    <!-- <c-searchable-dropdown eventname="SobjectField" fieldlabel="Fields" dropdownlabel="Select Fields"  options={sobjFields} onselectedpicklist={handlePicklistSelect}></c-searchable-dropdown> -->
+    </lightning-card>
 </template>

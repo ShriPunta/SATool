@@ -5,7 +5,9 @@ const delay = 350;
 export default class ReusableCustomDropdownWithSearchLwc extends LightningElement {
 
     //functional properties
-    @api fieldLabel;
+    @api fieldlabel="";
+    @api dropdownlabel;
+    @api eventname = "";
     @api disabled = false;
     @track openDropDown = false;
     @track inputValue = "";
@@ -112,7 +114,7 @@ export default class ReusableCustomDropdownWithSearchLwc extends LightningElemen
         this.setValues(value, label);
         this.toggleOpenDropDown(false);
         const detail = {};
-        detail["picklist"] = 'Profile';
+        detail["picklist"] = this.eventname;
         detail["value"] = value;
         detail["label"] = label;
         this.dispatchEvent(new CustomEvent('selectedpicklist', { detail: detail }));

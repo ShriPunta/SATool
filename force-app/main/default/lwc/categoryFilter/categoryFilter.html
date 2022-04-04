@@ -2,8 +2,6 @@
     <lightning-card>
         <div class="slds-var-m-around_x-small">
         <!-- <div class="slds-var-m-horizontal_medium"> -->
-            <section>
-                <h1>Category</h1>
                 <lightning-radio-group name="catRadioGroup"
                         label="Select Category"
                         options={catOptions}
@@ -12,10 +10,9 @@
                         onchange={handleRadChange}
                         type="button">
                 </lightning-radio-group>
-            </section>
             <br/>
             <template if:true={isProfileSelected}>
-                <c-searchable-dropdown options={allProfiles} onselectedpicklist={handleProfileSelect} value={defaultProfSelect.value} label={defaultProfSelect.label}></c-searchable-dropdown>
+                <c-searchable-dropdown eventname="Profile" fieldlabel="Profiles" dropdownlabel="Select Profiles" options={allProfiles} onselectedpicklist={handleProfileSelect} value={defaultProfSelect.value} label={defaultProfSelect.label}></c-searchable-dropdown>
             </template>
             <template if:true={isUserSelected}>
                 <div>
@@ -46,7 +43,7 @@
                     type="button"></lightning-radio-group>
                 </div> -->
                 <template for:each={userRecs} for:item="user">
-                    <lightning-pill variant="plain" onclick={handleQueriedUserSelect} key={user.Id} data-id={user.Id} label={user.Username}>
+                    <lightning-pill class="removePillX" variant="plain" onclick={handleQueriedUserSelect} key={user.Id} data-id={user.Id} label={user.Username}>
                         <lightning-avatar src={user.SmallPhotoUrl} fallback-icon-name="standard:user" variant="circle"  alternative-text="User avatar"></lightning-avatar>
                     </lightning-pill>
                 </template>

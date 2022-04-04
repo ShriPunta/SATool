@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>53.0</apiVersion>
-    <isExposed>false</isExposed>
-    <masterLabel>SATool Sobject Filter</masterLabel>
+    <isExposed>true</isExposed>
+    <masterLabel>SAT Container Layout</masterLabel>
     <targets>
         <target>lightning__AppPage</target>
         <target>lightning__RecordPage</target>

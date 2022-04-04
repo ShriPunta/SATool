@@ -1,8 +1,6 @@
 import { LightningElement, track, wire } from 'lwc';
 import getProfiles from '@salesforce/apex/SATController.getProfiles';
 import getUserList from '@salesforce/apex/SATController.getUserList';
-import { publish, MessageContext } from 'lightning/messageService';
-import PROFILES_FILTERED_MESSAGE from '@salesforce/messageChannel/ProfilesFiltered__c';
 import { NavigationMixin } from 'lightning/navigation';
 import USER_OBJECT from '@salesforce/schema/User';
 // import standard toast event 
@@ -11,11 +9,7 @@ import {ShowToastEvent} from 'lightning/platformShowToastEvent'
 // The delay used when debouncing event handlers before firing the event
 const SEARCH_DEBOUNCE_DELAY = 350;
 export default class QueryBox extends NavigationMixin(LightningElement) {
-    // TODO: Use the custom picklist solution online and show Sobject and their fields
-    // Use Cache.Org Partition to store Schema.getDescribe
     allProfiles = [];
-    filteredUsers = [];
-    filteredUsersOptions=[];
     selectedCat = 'Profile';
     isProfileSelected = true;
     isUserSelected = false;
@@ -53,8 +47,8 @@ export default class QueryBox extends NavigationMixin(LightningElement) {
                         message: error.body.message,
                     });
                     this.dispatchEvent(event);
-                    // reset contacts var with null   
-                    this.contactsRecord = null;
+                    // reset userRecs var with null   
+                    this.userRecs = null;
                 })
                 .finally(() => this.isUserSearchLoading = false);;
         } else {
@@ -68,14 +62,18 @@ export default class QueryBox extends NavigationMixin(LightningElement) {
     }
 
     handleQueriedUserSelect(event){
-        console.log('recs-->',this.userRecs);
+        console.log('recs-1->',this.userRecs);
         let userRecId = event.currentTarget.dataset.id;
-        console.log('userId-->',userRecId);
+        console.log('userId-2->',userRecId);
         let userObj = this.userRecs.filter(({Id}) => Id==userRecId)[0];
-        console.log('-->',JSON.parse(JSON.stringify(userObj)));
+        console.log('-3->',JSON.parse(JSON.stringify(userObj)));
         this.selectedUser = userObj;
         this.userSearchValue = userObj.Username;
-
+        this.filters.user = userRecId;
+        this.filters.profile = '';
+        this.userRecs = null;
+        console.log('-4-->',JSON.parse(JSON.stringify(this.filters)));
+        this.conveyFiltersToParent();
     }
 
     handleRadChange(event){
@@ -99,9 +97,6 @@ export default class QueryBox extends NavigationMixin(LightningElement) {
         }
     }
 
-    @wire(MessageContext)
-    messageContext;
-
 	get catOptions() {
         return [
             { label: 'Profile', value: 'Profile' },
@@ -111,11 +106,15 @@ export default class QueryBox extends NavigationMixin(LightningElement) {
 
     handleProfileSelect(event){
         if(event.detail.picklist == 'Profile'){
+            console.log('--5->',JSON.parse(JSON.stringify(event.detail)));
             this.selectedProfile = {
                 label: event.detail.label,
                 value: event.detail.value,
             }
-            console.log('--->',JSON.parse(JSON.stringify(this.selectedProfile)));
+            this.filters.profile = event.detail.value;
+            this.filters.user = '';
+            console.log('--6->',JSON.parse(JSON.stringify(this.filters)));
+            this.conveyFiltersToParent();
         }
     }
 
@@ -126,6 +125,12 @@ export default class QueryBox extends NavigationMixin(LightningElement) {
         }else{
             this.delayedFireFilterChangeEvent();
         }
+    }
+
+    conveyFiltersToParent(){
+        // const detail = {};
+        // detail["filters"] = this.filters;
+        this.dispatchEvent(new CustomEvent('filterupdate', { detail: { filters: this.filters } }));
     }
 
     delayedFireFilterChangeEvent() {

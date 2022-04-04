@@ -1,17 +1,37 @@
 public with sharing class SATController {
     private static Cache.OrgPartition satPart = Cache.Org.getPartition('local.SATool');
-
+    //
     @AuraEnabled(Cacheable=true)
     public static List<Map<String, String>> getSobjList() {
-        List<String> objList = new List<String>();
-        objList = (List<String>)satPart.get('sobjs');
+        List<Map<String, String>> retList = new List<Map<String, String>>();
+        Map<String,String> qAPINameAndLabelMap = (Map<String,String>)satPart.get('sobjs');
         // Check the cache value that the get() call returned.
-        if (objList!=null&&!objList.isEmpty()) {
-            return objList;
+        if (qAPINameAndLabelMap==null||qAPINameAndLabelMap.isEmpty()) {
+            qAPINameAndLabelMap = new Map<String,String>();
+            for(EntityDefinition ed: [SELECT QualifiedApiName,Masterlabel 
+            FROM EntityDefinition
+            WHERE IsQueryable = true AND IsLayoutable = true AND IsIdEnabled=true
+             AND IsCustomSetting=false AND IsApexTriggerable=true AND IsCustomizable=false
+             ORDER BY Developername]){
+                //  String s = ed.Masterlabel + '(' + ed.QualifiedApiName+')';
+                System.debug('-ed->'+ed);
+                qAPINameAndLabelMap.put(ed.QualifiedApiName, ed.Masterlabel);
+             }
+            // objNameSet.addAll(SATConstants.standardObjs);
+
+            satPart.put('sobjs', qAPINameAndLabelMap);
         }
+        for(String apiname : qAPINameAndLabelMap.keySet()){
+            String s = qAPINameAndLabelMap.get(apiname) + '('+apiname+')';
+            retList.add(new Map<String,String>{'value' => apiname, 'label' => s});
+        }
+        return retList;
+    }
+
+    /*
+    private static Set<String> generateListFromGlobalDesc(){
         Set<String> objNameSet = new Set<String>();
-        
-        Map<String , Schema.SObjectType > globaldesc = Schema.getGlobalDescribe(); 
+        Map<String , Schema.SObjectType > globaldesc = Schema.getGlobalDescribe();
         for(String sName: globaldesc.keySet()){
             Schema.SObjectType objType = globaldesc.get(sName);
             if(!objType.getDescribe().isCustomSetting() && sName.endsWithIgnoreCase('__c')){
@@ -24,15 +44,11 @@ public with sharing class SATController {
                 }
             }
         }
-        objNameSet.addAll(SATConstants.standardObjs);
-        String[] sortedSobjList = new String[0];
-        sortedSobjList.addAll(objNameSet);
-        sortedSobjList.sort();
-        satPart.put('sobjs', sortedSobjList);
-        return sortedSobjList;
+        return objNameSet;
     }
 
-    private List<Map<String, String>> transformToListOfMap(Sobject[] sobjs, String valueAPIName, String labelAPIName){
+    */
+    private static List<Map<String, String>> transformToListOfMap(Sobject[] sobjs, String valueAPIName, String labelAPIName){
         List<Map<String, String>> retList = new List<Map<String, String>>();
         for(Sobject sobj: sobjs){
             retList.add(new Map<String,String>{'value' => (String)sobj.get(valueAPIName), 'label' => (String)sobj.get(labelAPIName)});
@@ -42,9 +58,11 @@ public with sharing class SATController {
 
     @AuraEnabled(Cacheable=true)
     public static List<Map<String, String>> getProfiles() {
-        return transformToListOfMap([SELECT Id,Name FROM Profile
-        WHERE UserLicense.Name = 'Salesforce'
-        WITH SECURITY_ENFORCED], 'Id','Name');
+        return transformToListOfMap(
+            [SELECT Id,Name FROM Profile
+            WHERE UserLicense.Name = 'Salesforce'
+            WITH SECURITY_ENFORCED],
+            'Id','Name');
     }
 
     @AuraEnabled(cacheable=true)
@@ -64,5 +82,101 @@ public with sharing class SATController {
          }
          
         return userList;
+    }
+
+    @AuraEnabled(Cacheable=true)
+    public static SATableRow[] getObjectPermissions(Filters filter) {
+        if((nbc(filter.profile)||nbc(filter.user)) && nbc(filter.sobjectname) /*&& nbc(filter.fieldName)*/){
+            throw new AuraHandledException('Incomplete Filters.'); 
+        }
+        User u;
+        String objName = filter.sobjectname;
+        String profId = filter.profile;
+        String userId = filter.user;
+        
+        String wClause = 'WHERE SobjectType=: objName ';
+        if(!String.isBlank(userId)){
+            u = [select Id,profileId from User where Id=:userId];
+            if(u==null){
+                throw new AuraHandledException('User not found.'); 
+            }
+            Id profileId = u.ProfileId;
+            wClause+='AND (ParentId IN (SELECT PermissionSetId FROM PermissionSetAssignment WHERE AssigneeId =:userId))';
+        }else if(!String.isBlank(profId)){
+            wClause+='AND Parent.ProfileId =:profId AND Parent.IsOwnedByProfile = true';
+        }
+        
+        //AND Parent.ProfileId =:profId AND Parent.IsOwnedByProfile = true';
+        SATableRow[] rows = new SATableRow[0];
+        for(FieldPermissions fp: (FieldPermissions[])Database.query('SELECT Id,Parent.IsOwnedByProfile,Field,ParentId,PermissionsEdit,PermissionsRead,Parent.Name,Parent.Profile.Name FROM FieldPermissions '+wClause)){
+            SATableRow row = new SATableRow();
+            row.id=fp.Id;
+            row.editPerm=fp.PermissionsEdit;
+            row.editPermIcon=fp.PermissionsEdit?'utility:check':'utility:close';
+            row.readPerm=fp.PermissionsRead;
+            row.readPermIcon=fp.PermissionsRead?'utility:check':'utility:close';
+            if(fp.Parent.IsOwnedByProfile){
+                row.accessByName=fp.Parent.Profile.Name;
+                row.accessByIcon='utility:profile';
+            }else{
+                row.accessByName=fp.Parent.Name;
+                row.accessByIcon='utility:attach';
+            }
+            row.fieldName=fp.Field;
+            rows.add(row);
+        }
+        return rows;
+    }
+
+    @AuraEnabled(Cacheable=true)
+    public static List<Map<String, String>> getSobjFieldList(String objName) {
+        SObjectType r = ((SObject)Type.forName('Schema',objName).newInstance()).getSObjectType();
+        List<Map<String, String>> customFields = new List<Map<String, String>>();
+
+        Map<String,Schema.SObjectField> d = r.getDescribe().fields.getMap();
+        for (SObjectField field : d.values()) {
+            DescribeFieldResult dfr = field.getDescribe();
+            if (dfr.isCustom()) {
+                String apiName = dfr.getName();
+                String label = dfr.getLabel() + '('+ apiName+')';
+                customFields.add(new Map<String,String>{'value' => apiName, 'label' => label});
+            }
+        }
+        return customFields;
+    }
+
+    private static Boolean nbc(String s){
+        return s==null||String.isBlank(s);
+    }
+
+    public class Filters {
+        @AuraEnabled
+        public String user { get; set; }
+        @AuraEnabled
+        public String profile { get; set; }
+        @AuraEnabled
+        public String sobjectname { get; set; }
+        // @AuraEnabled
+        // public String fieldName { get; set; }
+    }
+
+    public class SATableRow{
+        @AuraEnabled
+        public String fieldName { get; set; }
+        @AuraEnabled
+        public Boolean readPerm { get; set; }
+        @AuraEnabled
+        public Boolean editPerm { get; set; }
+        @AuraEnabled
+        public String accessByName { get; set; }
+        @AuraEnabled
+        public String accessByIcon { get; set; }
+        @AuraEnabled
+        public String editPermIcon { get; set; }
+        @AuraEnabled
+        public String readPermIcon { get; set; }
+        @AuraEnabled
+        public String id { get; set; }
+        
     }
 }

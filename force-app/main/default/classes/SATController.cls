@@ -89,7 +89,7 @@ public with sharing class SATController {
     }
 
     @AuraEnabled(Cacheable=true)
-    public static SATableRow[] getObjectPermissions(Filters filter) {
+    public static FieldPermissions[] getObjectPermissions(Filters filter) {
         if((nbc(filter.profile)||nbc(filter.user)) && nbc(filter.sobjectname) /*&& nbc(filter.fieldName)*/){
             throw new AuraHandledException('Incomplete Filters.'); 
         }
@@ -111,6 +111,8 @@ public with sharing class SATController {
         }
         
         //AND Parent.ProfileId =:profId AND Parent.IsOwnedByProfile = true';
+        return (FieldPermissions[])Database.query('SELECT Id,Parent.IsOwnedByProfile,Field,ParentId,PermissionsEdit,PermissionsRead,Parent.Name,Parent.ProfileId,Parent.Profile.Name FROM FieldPermissions '+wClause);
+        /*
         SATableRow[] rows = new SATableRow[0];
         String baseHref = Url.getSalesforceBaseUrl().toExternalForm()+'/';
         for(FieldPermissions fp: (FieldPermissions[])Database.query('SELECT Id,Parent.IsOwnedByProfile,Field,ParentId,PermissionsEdit,PermissionsRead,Parent.Name,Parent.ProfileId,Parent.Profile.Name FROM FieldPermissions '+wClause)){
@@ -133,6 +135,7 @@ public with sharing class SATController {
             rows.add(row);
         }
         return rows;
+        */
     }
 
     @AuraEnabled(Cacheable=true)
@@ -167,6 +170,7 @@ public with sharing class SATController {
         // public String fieldName { get; set; }
     }
 
+    /*
     public class SATableRow{
         @AuraEnabled
         public String fieldName { get; set; }
@@ -187,11 +191,12 @@ public with sharing class SATController {
         @AuraEnabled
         public String accessByUrl { get; set; }
     }
+    */
+    /*
+        System.debug('--miss-->'+Cache.Org.getPartition('local.SATool').getMissRate());
+        System.debug('--avggsize-->'+Cache.Org.getPartition('local.SATool').getAvgGetSize());
+        System.debug('--avggtime-->'+Cache.Org.getPartition('local.SATool').getAvgGetTime());
+        System.debug('--getCapacity-->'+Cache.Org.getPartition('local.SATool').getCapacity());
+        System.debug('--getKeys-->'+Cache.Org.getPartition('local.SATool').getKeys());
+    */
 }
-/*
-System.debug('--miss-->'+Cache.Org.getPartition('local.SATool').getMissRate());
-System.debug('--avggsize-->'+Cache.Org.getPartition('local.SATool').getAvgGetSize());
-System.debug('--avggtime-->'+Cache.Org.getPartition('local.SATool').getAvgGetTime());
-System.debug('--getCapacity-->'+Cache.Org.getPartition('local.SATool').getCapacity());
-System.debug('--getKeys-->'+Cache.Org.getPartition('local.SATool').getKeys());
-*/

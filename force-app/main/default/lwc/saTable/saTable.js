@@ -11,7 +11,7 @@ export default class SaTable extends LightningElement {
     /** JSON.stringified version of filters to pass to apex */
     filters = {};
     @track filteredperms;
-    perms;
+    permsMap= new Map();
     searchKey='';
     searchBarPlaceholder;
     
@@ -78,20 +78,14 @@ export default class SaTable extends LightningElement {
         );
     }
 
-    handleFilterChange(message) {
-        console.log('message recevied!');
+    async handleFilterChange(message) {
         this.filters = { ...message.filters };
-        getObjectPermissions({
-            filter: this.filters
-        })
-        .then(result => {
-            // let baseUrl = 'https://'+location.host+'/';
+        try{
+            let res = await getObjectPermissions({filter: this.filters});
             this.searchBarPlaceholder = `Search ${this.filters.sobjectname} fields`;
-            console.log('--->',JSON.parse(JSON.stringify(result)));
-            this.perms = result;
-            this.filteredperms = [...this.perms];
-        })
-        .catch(error => {
+            this.permsMap = this.massageJSONToMap(res);//new Map(res.map(i => [i.Id, i]));
+            this.filteredperms = [...this.permsMap.values()];
+        }catch(error){
             const event = new ShowToastEvent({
                 title: 'Error',
                 variant: 'error',
@@ -99,10 +93,34 @@ export default class SaTable extends LightningElement {
             });
             this.dispatchEvent(event);
             // reset contacts var with null   
-            this.perms = null;
-        })
-        .finally(() => this.dispatchEvent(new CustomEvent('spinnerupdate', { detail: { spinner: false } })));;
-        
+            this.permsMap = null;
+        }
+        this.dispatchEvent(new CustomEvent('spinnerupdate', { detail: { spinner: false } }));
+    }
+
+    massageJSONToMap(apexArr){
+        let permMap = new Map();
+        let baseHref = `https://${window.location.origin}/`;
+        apexArr.forEach((fp) => {
+            let row = {};
+            row.id=fp.Id;
+            row.editPerm=fp.PermissionsEdit;
+            row.editPermIcon=fp.PermissionsEdit?'utility:check':'utility:close';
+            row.readPerm=fp.PermissionsRead;
+            row.readPermIcon=fp.PermissionsRead?'utility:check':'utility:close';
+            if(fp.Parent.IsOwnedByProfile){
+                row.accessByName=fp.Parent.Profile.Name;
+                row.accessByIcon='utility:profile';
+                row.accessByUrl = baseHref+fp.Parent.ProfileId;
+            }else{
+                row.accessByName=fp.Parent.Name;
+                row.accessByIcon='utility:attach';
+                row.accessByUrl = baseHref+fp.ParentId;
+            }
+            row.fieldName=fp.Field;
+            permMap.set(fp.Id, row)
+        });
+        return permMap;
     }
 
     handleSearchKeyChange(event){
@@ -112,7 +130,7 @@ export default class SaTable extends LightningElement {
 
     filterPermsTable(){
         const regM = new RegExp(`${this.searchKey}`, 'gi');
-        this.filteredperms=this.perms.filter(({fieldName}) => fieldName.match(regM));
+        this.filteredperms=[...this.permsMap.values()].filter(({fieldName}) => fieldName.match(regM));
     }
 
     delayedFireTableFilterEvent() {
@@ -128,7 +146,6 @@ export default class SaTable extends LightningElement {
     getSelectedRows(event) {
         const selectedRows = event.detail.selectedRows;
         // Display that fieldName of the selected rows
-        console.log('--1->',JSON.parse(JSON.stringify(selectedRows.length)));
         // for (let i = 0; i < selectedRows.length; i++) {
         //     alert('You selected: ' + selectedRows[i].opportunityName);
         // }

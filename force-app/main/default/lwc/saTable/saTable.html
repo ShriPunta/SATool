@@ -1,8 +1,19 @@
 <template>
-    <div>
+    <div class="slds-m-around_medium">
+        <template if:true={perms}>
+            <lightning-input 
+            type="search" 
+            onchange={handleSearchKeyChange}
+            placeholder={searchBarPlaceholder}
+            class="slds-m-bottom_small"           
+            label="Search" 
+            value={searchKey}>
+            </lightning-input>
+        </template>
+        
         <lightning-datatable
         key-field="id"
-        data={perms}
+        data={filteredperms}
         columns={columns}
         onrowselection={getSelectedRows}
         >

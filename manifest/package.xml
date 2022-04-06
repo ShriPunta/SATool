@@ -14,8 +14,8 @@
 	</types>
 	<types>
 		<members>categoryFilter</members>
-		<members>saTable</members>
 		<members>queryBox</members>
+		<members>saTable</members>
 		<members>satContainer</members>
 		<members>searchableDropdown</members>
 		<members>sobjectFilter</members>
@@ -24,6 +24,10 @@
 	<types>
 		<members>PopulateSATable</members>
 		<name>LightningMessageChannel</name>
+	</types>
+	<types>
+		<members>SATool</members>
+		<name>PlatformCachePartition</name>
 	</types>
 	<version>53.0</version>
 </Package>

@@ -7,16 +7,20 @@ public with sharing class SATController {
         Map<String,String> qAPINameAndLabelMap = (Map<String,String>)satPart.get('sobjs');
         // Check the cache value that the get() call returned.
         if (qAPINameAndLabelMap==null||qAPINameAndLabelMap.isEmpty()) {
+            String lastQueriedItem;
+            String qFields = 'QualifiedApiName,Masterlabel';
+            String qCount = 'count()';
+            String q = 'SELECT {0} FROM EntityDefinition WHERE QualifiedApiName > :lastQueriedItem AND IsQueryable = true AND IsLayoutable = true AND IsIdEnabled=true AND IsCustomSetting=false AND IsApexTriggerable=true AND IsCustomizable=true {1} {2}';
+            Integer objCount = Database.countQuery(String.format(q,new List<String>{ qCount,'','',''} ));
             qAPINameAndLabelMap = new Map<String,String>();
-            for(EntityDefinition ed: [SELECT QualifiedApiName,Masterlabel 
-            FROM EntityDefinition
-            WHERE IsQueryable = true AND IsLayoutable = true AND IsIdEnabled=true
-             AND IsCustomSetting=false AND IsApexTriggerable=true AND IsCustomizable=false
-             ORDER BY Developername]){
-                //  String s = ed.Masterlabel + '(' + ed.QualifiedApiName+')';
-                System.debug('-ed->'+ed);
-                qAPINameAndLabelMap.put(ed.QualifiedApiName, ed.Masterlabel);
-             }
+            while(objCount>0){
+                for(EntityDefinition ed: (EntityDefinition[])Database.query(String.format(q,new List<String>{ qFields,'ORDER BY Developername','LIMIT 2000'}))){
+                    qAPINameAndLabelMap.put(ed.QualifiedApiName, ed.Masterlabel);
+                    lastQueriedItem=ed.QualifiedApiName;
+                 }
+                 objCount-=2000;
+            }
+            
             // objNameSet.addAll(SATConstants.standardObjs);
 
             satPart.put('sobjs', qAPINameAndLabelMap);
@@ -108,7 +112,8 @@ public with sharing class SATController {
         
         //AND Parent.ProfileId =:profId AND Parent.IsOwnedByProfile = true';
         SATableRow[] rows = new SATableRow[0];
-        for(FieldPermissions fp: (FieldPermissions[])Database.query('SELECT Id,Parent.IsOwnedByProfile,Field,ParentId,PermissionsEdit,PermissionsRead,Parent.Name,Parent.Profile.Name FROM FieldPermissions '+wClause)){
+        String baseHref = Url.getSalesforceBaseUrl().toExternalForm()+'/';
+        for(FieldPermissions fp: (FieldPermissions[])Database.query('SELECT Id,Parent.IsOwnedByProfile,Field,ParentId,PermissionsEdit,PermissionsRead,Parent.Name,Parent.ProfileId,Parent.Profile.Name FROM FieldPermissions '+wClause)){
             SATableRow row = new SATableRow();
             row.id=fp.Id;
             row.editPerm=fp.PermissionsEdit;
@@ -118,9 +123,11 @@ public with sharing class SATController {
             if(fp.Parent.IsOwnedByProfile){
                 row.accessByName=fp.Parent.Profile.Name;
                 row.accessByIcon='utility:profile';
+                row.accessByUrl = baseHref+fp.Parent.ProfileId;
             }else{
                 row.accessByName=fp.Parent.Name;
                 row.accessByIcon='utility:attach';
+                row.accessByUrl = baseHref+fp.ParentId;
             }
             row.fieldName=fp.Field;
             rows.add(row);
@@ -177,6 +184,14 @@ public with sharing class SATController {
         public String readPermIcon { get; set; }
         @AuraEnabled
         public String id { get; set; }
-        
+        @AuraEnabled
+        public String accessByUrl { get; set; }
     }
 }
+/*
+System.debug('--miss-->'+Cache.Org.getPartition('local.SATool').getMissRate());
+System.debug('--avggsize-->'+Cache.Org.getPartition('local.SATool').getAvgGetSize());
+System.debug('--avggtime-->'+Cache.Org.getPartition('local.SATool').getAvgGetTime());
+System.debug('--getCapacity-->'+Cache.Org.getPartition('local.SATool').getCapacity());
+System.debug('--getKeys-->'+Cache.Org.getPartition('local.SATool').getKeys());
+*/

@@ -4,11 +4,17 @@ import POPULATE_SA_TABLE_MSG from '@salesforce/messageChannel/PopulateSATable__c
 import getObjectPermissions from '@salesforce/apex/SATController.getObjectPermissions';
 import {ShowToastEvent} from 'lightning/platformShowToastEvent'
 
+const SEARCH_DEBOUNCE_DELAY = 350;
+
 export default class SaTable extends LightningElement {
     
     /** JSON.stringified version of filters to pass to apex */
     filters = {};
-    @track perms;
+    @track filteredperms;
+    perms;
+    searchKey='';
+    searchBarPlaceholder;
+    
     columns = [
         { label: 'Field name', fieldName: 'fieldName', type: 'text' },
         {
@@ -31,8 +37,15 @@ export default class SaTable extends LightningElement {
         },
         { 
             label: 'Access By',
-            fieldName: 'accessByName',
-            type: 'string',
+            fieldName: 'accessByUrl',
+            type: 'url',
+            wrapText: true,
+            typeAttributes: {
+                label: { 
+                    fieldName: 'accessByName' 
+                },
+                target : '_blank'
+            },
             cellAttributes: {
                 iconName: { fieldName: 'accessByIcon' },
                 iconPosition: 'right',
@@ -72,8 +85,11 @@ export default class SaTable extends LightningElement {
             filter: this.filters
         })
         .then(result => {
-            // set @track contacts variable with return contact list from server  
+            // let baseUrl = 'https://'+location.host+'/';
+            this.searchBarPlaceholder = `Search ${this.filters.sobjectname} fields`;
+            console.log('--->',JSON.parse(JSON.stringify(result)));
             this.perms = result;
+            this.filteredperms = [...this.perms];
         })
         .catch(error => {
             const event = new ShowToastEvent({
@@ -83,12 +99,32 @@ export default class SaTable extends LightningElement {
             });
             this.dispatchEvent(event);
             // reset contacts var with null   
-            this.contactsRecord = null;
+            this.perms = null;
         })
         .finally(() => this.dispatchEvent(new CustomEvent('spinnerupdate', { detail: { spinner: false } })));;
         
     }
-    
+
+    handleSearchKeyChange(event){
+        this.searchKey = event.target.value;
+        this.delayedFireTableFilterEvent();
+    }
+
+    filterPermsTable(){
+        const regM = new RegExp(`${this.searchKey}`, 'gi');
+        this.filteredperms=this.perms.filter(({fieldName}) => fieldName.match(regM));
+    }
+
+    delayedFireTableFilterEvent() {
+        // Debouncing this method: Do not actually fire the event as long as this function is
+        // being called within a delay of DELAY.
+        window.clearTimeout(this.delayTimeout);
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        this.delayTimeout = setTimeout(() => {
+            this.filterPermsTable();
+        }, SEARCH_DEBOUNCE_DELAY);
+    }
+
     getSelectedRows(event) {
         const selectedRows = event.detail.selectedRows;
         // Display that fieldName of the selected rows

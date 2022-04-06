@@ -5,7 +5,7 @@ import getObjectPermissions from '@salesforce/apex/SATController.getObjectPermis
 import {ShowToastEvent} from 'lightning/platformShowToastEvent'
 
 const SEARCH_DEBOUNCE_DELAY = 350;
-
+//https://webcomponents.dev/edit/sxflCpdhbEAL3XGmX0J5/src/app.js?p=stories
 export default class SaTable extends LightningElement {
     
     /** JSON.stringified version of filters to pass to apex */

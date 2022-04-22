@@ -1,5 +1,12 @@
 public with sharing class SATController {
     private static Cache.OrgPartition satPart = Cache.Org.getPartition('local.SATool');
+
+    @AuraEnabled(Cacheable=true)
+    public static SystemVars getSystemVars() {
+        SystemVars s = new SystemVars();
+        s.baseURL = Url.getOrgDomainUrl().toExternalForm();
+        return s;
+    }
     //
     @AuraEnabled(Cacheable=true)
     public static List<Map<String, String>> getSobjList() {
@@ -169,6 +176,12 @@ public with sharing class SATController {
         // @AuraEnabled
         // public String fieldName { get; set; }
     }
+
+    public class SystemVars {
+        @AuraEnabled
+        public String baseURL { get; set; }
+    }
+
 
     /*
     public class SATableRow{

@@ -2,6 +2,7 @@ import { LightningElement,track,wire } from 'lwc';
 import { subscribe, MessageContext } from 'lightning/messageService';
 import POPULATE_SA_TABLE_MSG from '@salesforce/messageChannel/PopulateSATable__c';
 import getObjectPermissions from '@salesforce/apex/SATController.getObjectPermissions';
+import getSystemVars from '@salesforce/apex/SATController.getSystemVars';
 import {ShowToastEvent} from 'lightning/platformShowToastEvent'
 
 const SEARCH_DEBOUNCE_DELAY = 350;
@@ -14,6 +15,22 @@ export default class SaTable extends LightningElement {
     permsMap= new Map();
     searchKey='';
     searchBarPlaceholder;
+    systemvars = {}
+    @wire(getSystemVars, {})
+    wiredGetSobjList(value) {
+        if (value.error) {
+            console.error('-systemvarserror-->',JSON.parse(JSON.stringify(value)));
+            const event = new ShowToastEvent({
+                title: 'System Var retrieval error',
+                variant: 'error',
+                message: error.body.message,
+            });
+            this.dispatchEvent(event);
+        } else if (value.data) {
+            this.systemvars = value.data;
+            console.log('--systemvars->',JSON.parse(JSON.stringify(this.systemvars)));
+        }
+    }
     
     columns = [
         { label: 'Field name', fieldName: 'fieldName', type: 'text' },
@@ -80,6 +97,7 @@ export default class SaTable extends LightningElement {
 
     async handleFilterChange(message) {
         this.filters = { ...message.filters };
+        this.searchKey='';
         try{
             let res = await getObjectPermissions({filter: this.filters});
             this.searchBarPlaceholder = `Search ${this.filters.sobjectname} fields`;
@@ -87,7 +105,7 @@ export default class SaTable extends LightningElement {
             this.filteredperms = [...this.permsMap.values()];
         }catch(error){
             const event = new ShowToastEvent({
-                title: 'Error',
+                title: 'Permission table population error',
                 variant: 'error',
                 message: error.body.message,
             });
@@ -100,7 +118,9 @@ export default class SaTable extends LightningElement {
 
     massageJSONToMap(apexArr){
         let permMap = new Map();
-        let baseHref = `https://${window.location.origin}/`;
+        // let baseHref = `https://${window.location.origin}/`;
+        let baseHref = `${this.systemvars.baseURL}/`;
+        console.log('--->',JSON.parse(JSON.stringify(this.systemvars)));
         apexArr.forEach((fp) => {
             let row = {};
             row.id=fp.Id;

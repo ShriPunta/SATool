@@ -138,7 +138,7 @@ export default class SaTable extends LightningElement {
                 row.accessByUrl = baseHref+fp.ParentId;
             }
             row.fieldName=fp.Field;
-            permMap.set(fp.Id, row)
+            permMap.set(fp.Field, row)
         });
         return permMap;
     }

@@ -27,8 +27,6 @@ public with sharing class SATController {
                  }
                  objCount-=2000;
             }
-            
-            // objNameSet.addAll(SATConstants.standardObjs);
 
             satPart.put('sobjs', qAPINameAndLabelMap);
         }
@@ -119,30 +117,6 @@ public with sharing class SATController {
         
         //AND Parent.ProfileId =:profId AND Parent.IsOwnedByProfile = true';
         return (FieldPermissions[])Database.query('SELECT Id,Parent.IsOwnedByProfile,Field,ParentId,PermissionsEdit,PermissionsRead,Parent.Name,Parent.ProfileId,Parent.Profile.Name FROM FieldPermissions '+wClause);
-        /*
-        SATableRow[] rows = new SATableRow[0];
-        String baseHref = Url.getSalesforceBaseUrl().toExternalForm()+'/';
-        for(FieldPermissions fp: (FieldPermissions[])Database.query('SELECT Id,Parent.IsOwnedByProfile,Field,ParentId,PermissionsEdit,PermissionsRead,Parent.Name,Parent.ProfileId,Parent.Profile.Name FROM FieldPermissions '+wClause)){
-            SATableRow row = new SATableRow();
-            row.id=fp.Id;
-            row.editPerm=fp.PermissionsEdit;
-            row.editPermIcon=fp.PermissionsEdit?'utility:check':'utility:close';
-            row.readPerm=fp.PermissionsRead;
-            row.readPermIcon=fp.PermissionsRead?'utility:check':'utility:close';
-            if(fp.Parent.IsOwnedByProfile){
-                row.accessByName=fp.Parent.Profile.Name;
-                row.accessByIcon='utility:profile';
-                row.accessByUrl = baseHref+fp.Parent.ProfileId;
-            }else{
-                row.accessByName=fp.Parent.Name;
-                row.accessByIcon='utility:attach';
-                row.accessByUrl = baseHref+fp.ParentId;
-            }
-            row.fieldName=fp.Field;
-            rows.add(row);
-        }
-        return rows;
-        */
     }
 
     @AuraEnabled(Cacheable=true)
@@ -182,29 +156,6 @@ public with sharing class SATController {
         public String baseURL { get; set; }
     }
 
-
-    /*
-    public class SATableRow{
-        @AuraEnabled
-        public String fieldName { get; set; }
-        @AuraEnabled
-        public Boolean readPerm { get; set; }
-        @AuraEnabled
-        public Boolean editPerm { get; set; }
-        @AuraEnabled
-        public String accessByName { get; set; }
-        @AuraEnabled
-        public String accessByIcon { get; set; }
-        @AuraEnabled
-        public String editPermIcon { get; set; }
-        @AuraEnabled
-        public String readPermIcon { get; set; }
-        @AuraEnabled
-        public String id { get; set; }
-        @AuraEnabled
-        public String accessByUrl { get; set; }
-    }
-    */
     /*
         System.debug('--miss-->'+Cache.Org.getPartition('local.SATool').getMissRate());
         System.debug('--avggsize-->'+Cache.Org.getPartition('local.SATool').getAvgGetSize());

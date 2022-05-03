@@ -1,10 +1,9 @@
 import { LightningElement, wire } from 'lwc';
 import { publish, MessageContext } from 'lightning/messageService';
 import POPULATE_SA_TABLE_MSG from '@salesforce/messageChannel/PopulateSATable__c';
-import { NavigationMixin } from 'lightning/navigation';
 // import standard toast event 
 
-export default class QueryBox extends NavigationMixin(LightningElement) {
+export default class QueryBox extends LightningElement {
     filters={
         user : "",
         profile : "",

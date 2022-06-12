@@ -69,7 +69,7 @@ public with sharing class SATController {
     public static List<Map<String, String>> getProfiles() {
         return transformToListOfMap(
             [SELECT Id,Name FROM Profile
-            WHERE UserLicense.Name = 'Salesforce'
+            //WHERE UserLicense.Name = 'Salesforce'
             WITH SECURITY_ENFORCED],
             'Id','Name');
     }

@@ -1,14 +1,20 @@
+<!--
+	@Author: Shridhar Puntambekar [https://github.com/ShriPunta]
+	@Repo: https://github.com/ShriPunta/SATool
+	@Date: 2022-03-23
+	@Description: Container page to embed the LWC component for Salesforce classic use.
+-->
 <apex:page showHeader="false" sidebar="false">
-    <apex:includeLightning />    
-    <div id="LightningComponentid" />   
-    <script>
-        $Lightning.use("c:SATAuraApp", function() {
-            $Lightning.createComponent("c:satContainer",
-            {},
-            "LightningComponentid", // the Id of div tag where your component will be rendered
-            function(cmp) {
-                console.log('Calling the LWC Component');
-            });
-        });
-    </script>
+	<apex:includeLightning />
+	<div id="LightningComponentid" />
+	<script>
+		$Lightning.use("c:SATAuraApp", function() {
+			$Lightning.createComponent("c:satContainer",
+			{},
+			"LightningComponentid", // the Id of div tag where your component will be rendered
+			function(cmp) {
+				console.log('Calling the LWC Component');
+			});
+		});
+	</script>
 </apex:page>

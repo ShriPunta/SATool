@@ -1,23 +1,29 @@
+<!--
+	@Author: Shridhar Puntambekar [https://github.com/ShriPunta]
+	@Repo: https://github.com/ShriPunta/SATool
+	@Date: 2022-03-23
+	@Description: Component which renders the received FieldPermissions data for searching.
+-->
 <template>
-    <div class="slds-m-around_medium">
-        <template if:true={permsMap}>
-            <lightning-input 
-            type="search" 
-            onchange={handleSearchKeyChange}
-            placeholder={searchBarPlaceholder}
-            class="slds-m-bottom_small"           
-            value={searchKey}>
-            </lightning-input>
-        </template>
-        
-        <lightning-datatable
-        key-field="id"
-        data={filteredperms}
-        columns={columns}
-        onrowselection={getSelectedRows}
-        >
-        <!-- is-loading={isTableLoading} -->
-        </lightning-datatable>
-        
-    </div>   
+	<div class="slds-m-around_medium">
+		<template if:true={permsMap}>
+			<lightning-input
+			type="search"
+			onchange={handleSearchKeyChange}
+			placeholder={searchBarPlaceholder}
+			class="slds-m-bottom_small"
+			value={searchKey}>
+			</lightning-input>
+		</template>
+		
+		<lightning-datatable
+		key-field="id"
+		data={filteredperms}
+		columns={columns}
+		onrowselection={getSelectedRows}
+		>
+		<!-- is-loading={isTableLoading} -->
+		</lightning-datatable>
+		
+	</div>
 </template>

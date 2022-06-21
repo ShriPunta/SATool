@@ -176,10 +176,16 @@ public with sharing class SATController {
 			wClause+='AND Parent.ProfileId =:profId AND Parent.IsOwnedByProfile = true';
 		}
 		
-		//AND Parent.ProfileId =:profId AND Parent.IsOwnedByProfile = true';
 		return (FieldPermissions[])Database.query('SELECT Id,Parent.IsOwnedByProfile,Field,ParentId,PermissionsEdit,PermissionsRead,Parent.Name,Parent.ProfileId,Parent.Profile.Name FROM FieldPermissions '+wClause);
 	}
 	
+	/**-----------------------------------------------------------------------------------
+	- This method provides all the custom fields for a given Sobject API Name in 
+	 picklist map format.
+	=======================================================================================
+	TODO: Server should only provide the list of api/label names. The client should do the
+	 transformation. Move this method to LWC.
+	-----------------------------------------------------------------------------------**/
 	@AuraEnabled(Cacheable=true)
 	public static List<Map<String, String>> getSobjFieldList(String objName) {
 		SObjectType r = ((SObject)Type.forName('Schema',objName).newInstance()).getSObjectType();
@@ -197,10 +203,16 @@ public with sharing class SATController {
 		return customFields;
 	}
 
+	/**----------------------------------------------------------------------------------
+	- Utility method is an alias for the string NullBlankCheck
+	-----------------------------------------------------------------------------------**/
 	private static Boolean nbc(String s){
 		return s==null||String.isBlank(s);
 	}
 
+	/**----------------------------------------------------------------------------------
+	- Wrapper that reflects the filters being passed in from the LWC.
+	-----------------------------------------------------------------------------------**/
 	public class Filters {
 		@AuraEnabled
 		public String user { get; set; }
@@ -212,16 +224,11 @@ public with sharing class SATController {
 		// public String fieldName { get; set; }
 	}
 
+	/**----------------------------------------------------------------------------------
+	- Wrapper for system variables. Can be extended for future use.
+	-----------------------------------------------------------------------------------**/
 	public class SystemVars {
 		@AuraEnabled
 		public String baseURL { get; set; }
 	}
-
-	/*
-		System.debug('--miss-->'+Cache.Org.getPartition('local.SATool').getMissRate());
-		System.debug('--avggsize-->'+Cache.Org.getPartition('local.SATool').getAvgGetSize());
-		System.debug('--avggtime-->'+Cache.Org.getPartition('local.SATool').getAvgGetTime());
-		System.debug('--getCapacity-->'+Cache.Org.getPartition('local.SATool').getCapacity());
-		System.debug('--getKeys-->'+Cache.Org.getPartition('local.SATool').getKeys());
-	*/
 }

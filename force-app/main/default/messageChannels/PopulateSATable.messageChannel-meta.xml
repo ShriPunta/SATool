@@ -1,9 +1,10 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <LightningMessageChannel xmlns="http://soap.sforce.com/2006/04/metadata">
-    <masterLabel>PopulateSATable</masterLabel>
     <description>This event is fired when filters are updated.</description>
+    <isExposed>false</isExposed>
     <lightningMessageFields>
-        <fieldName>filters</fieldName>
         <description>Current filters for SATool.</description>
+        <fieldName>filters</fieldName>
     </lightningMessageFields>
+    <masterLabel>PopulateSATable</masterLabel>
 </LightningMessageChannel>

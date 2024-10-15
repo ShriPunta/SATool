@@ -5,11 +5,20 @@
 		<name>ApexClass</name>
 	</types>
 	<types>
+		<members>SATAuraApp</members>
+		<name>AuraDefinitionBundle</name>
+	</types>
+	<types>
+		<members>SATool</members>
+		<name>CustomApplication</name>
+	</types>
+	<types>
 		<members>SAToolv2</members>
 		<name>CustomTab</name>
 	</types>
 	<types>
 		<members>SAToolv2</members>
+		<members>SATool_UtilityBar</members>
 		<name>FlexiPage</name>
 	</types>
 	<types>
@@ -29,5 +38,5 @@
 		<members>SATool</members>
 		<name>PlatformCachePartition</name>
 	</types>
-	<version>53.0</version>
+	<version>60.0</version>
 </Package>
